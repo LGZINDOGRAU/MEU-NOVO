@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI.Hub // Ferramentas do Futuro</title>
+    <style>
+        /* --- CONFIGURAÇÕES GERAIS --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background: #090d16;
+            color: #f3f4f6;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Bolas de Luz Neon ao Fundo */
+        body::before, body::after {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -1;
+            opacity: 0.4;
+        }
+        body::before {
+            top: 10%;
+            left: 15%;
+            background: #8b5cf6; /* Roxo */
+        }
+        body::after {
+            bottom: 15%;
+            right: 15%;
+            background: #06b6d4; /* Ciano */
+        }
+
+        /* --- CONTAINER PRINCIPAL --- */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* --- HEADER --- */
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #9ca3af;
+            font-size: 1.1rem;
+        }
+
+        /* --- GRID DE FERRAMENTAS --- */
+        .grid-tools {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+        }
+
+        /* --- EFEITO GLASSMORPHISM (CARD) --- */
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 30px;
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(139, 92, 246, 0.4);
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.1);
+        }
+
+        .card h2 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #f3f4f6;
+        }
+
+        .card p.description {
+            color: #9ca3af;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        /* --- FORMULÁRIOS E INPUTS --- */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: #9ca3af;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        select, input, textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        select:focus, input:focus, textarea:focus {
+            border-color: #06b6d4;
+        }
+
+        select option {
+            background: #111827;
+        }
+
+        /* --- BOTÕES --- */
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        /* --- ÁREA DE RESULTADO (PROMPT) --- */
+        .result-box {
+            margin-top: 20px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            padding: 15px;
+            position: relative;
+            display: none; /* Escondido até gerar */
+        }
+
+        .result-text {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            line-height: 1.5;
+            word-wrap: break-word;
+            margin-bottom: 10px;
+        }
+
+        .btn-copy {
+            background: rgba(255, 255, 255, 0.1);
+            font-size: 0.8rem;
+            padding: 6px 12px;
+            width: auto;
+            display: inline-block;
+        }
+
+        .btn-copy:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* --- LINKS FAVORITOS (LINK-IN-BIO STYLE) --- */
+        .ai-links {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .ai-link-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            text-decoration: none;
+            color: #e5e7eb;
+            font-weight: 500;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .ai-link-item:hover {
+            background: rgba(6, 182, 212, 0.08);
+            border-color: rgba(6, 182, 212, 0.3);
+            color: #06b6d4;
+        }
+
+        .ai-link-item span.tag {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>AI.Hub Personal</h1>
+            <p>Minha central inteligente de ferramentas para o GitHub</p>
+        </header>
+
+        <main class="grid-tools">
+
+            <!-- CARD 1: GERADOR DE PROMPTS -->
+            <section class="card">
+                <h2>🤖 Gerador de Prompts</h2>
+                <p class="description">Gere instruções perfeitas para colar em IA como ChatGPT, Claude ou Gemini.</p>
+                
+                <div class="form-group">
+                    <label for="role">Eu quero que você seja um:</label>
+                    <select id="role">
+                        <option value="Programador Sênior especialista em JavaScript e Python">Programador Sênior</option>
+                        <option value="Professor de História altamente didático">Professor de História</option>
+                        <option value="Designer de UI/UX especialista em layouts modernos">Designer de UI/UX</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="task">Para me ajudar a:</label>
+                    <select id="task">
+                        <option value="explicar de forma simples e direta o conceito de">Explicar um conceito</option>
+                        <option value="encontrar erros e otimizar o código do seguinte">Corrigir um código</option>
+                        <option value="criar ideias criativas e inovadoras sobre">Dar ideias sobre</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="context">O Assunto / Contexto:</label>
+                    <input type="text" id="context" placeholder="Ex: Efeito Glassmorphism no CSS ou Segunda Guerra">
+                </div>
+
+                <button onclick="generatePrompt()">Gerar Engenharia de Prompt</button>
+
+                <div class="result-box" id="resultBox">
+                    <div class="result-text" id="promptResult"></div>
+                    <button class="btn-copy" onclick="copyPrompt()" id="btnCopyText">Copiar Prompt</button>
+                </div>
+            </section>
+
+            <!-- CARD 2: LINKS DE IA FAVORITOS -->
+            <section class="card">
+                <h2>🌐 Principais Destinos</h2>
+                <p class="description">Acesso rápido aos modelos e repositórios mais relevantes do ecossistema de Inteligência Artificial.</p>
+                
+                <div class="ai-links">
+                    <a href="https://github.com" target="_blank" class="ai-link-item">
+                        <span>GitHub</span>
+                        <span class="tag">Código</span>
+                    </a>
+                    <a href="https://huggingface.co" target="_blank" class="ai-link-item">
+                        <span>Hugging Face</span>
+                        <span class="tag">Modelos IA</span>
+                    </a>
+                    <a href="https://gemini.google.com" target="_blank" class="ai-link-item">
+                        <span>Google Gemini</span>
+                        <span class="tag">Chatbot</span>
+                    </a>
+                    <a href="https://v0.dev" target="_blank" class="ai-link-item">
+                        <span>v0.dev</span>
+                        <span class="tag">Design IA</span>
+                    </a>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- --- JAVASCRIPT DINÂMICO --- -->
+    <script>
+        function generatePrompt() {
+            const role = document.getElementById('role').value;
+            const task = document.getElementById('task').value;
+            const context = document.getElementById('context').value;
+
+            if (!context.trim()) {
+                alert('Por favor, digite um assunto no campo de contexto!');
+                return;
+            }
+
+            // Lógica que constrói a frase perfeita (Engenharia de Prompt)
+            const finalPrompt = `Atue como um ${role}. Sua tarefa é ${task} "${context}". Seja extremamente claro, direto ao ponto, organize a resposta com tópicos e traga exemplos práticos adequados para quem quer aprender de verdade.`;
+
+            // Exibi
+      r o bloco de resultado e inserir o texto
+            const resultBox = document.getElementById('resultBox');
+            const promptResult = document.getElementById('promptResult');
+            
+            promptResult.innerText = finalPrompt;
+            resultBox.style.display = 'block';
+            
+            // Reseta o botão de copiar caso já tenha sido usado antes
+            document.getElementById('btnCopyText').innerText = 'Copiar Prompt';
+        }
+
+        function copyPrompt() {
+            const promptText = document.getElementById('promptResult').innerText;
+            
+            navigator.clipboard.writeText(promptText).then(() => {
+                const btn = document.getElementById('btnCopyText');
+                btn.innerText = '📋 Copiado!';
+            }).catch(err => {
+                console.error('Erro ao copiar texto: ', err);
+            });
+        }
+    </script>
+</body>
+</html>
