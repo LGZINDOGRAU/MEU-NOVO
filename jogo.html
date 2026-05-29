@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ CYBER BEAT // Arcade Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', Courier, monospace;
+            user-select: none;
+        }
+
+        body {
+            background: #05050a;
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* --- TELA DO JOGO --- */
+        .arcade-container {
+            width: 400px;
+            height: 600px;
+            background: #0d0e15;
+            border: 4px solid #ff0055;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(255, 0, 85, 0.3);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- PLACAR --- */
+        .hud {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 2px solid #222;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #00ffcc;
+            text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+        }
+
+        .combo {
+            color: #ff0055;
+            text-shadow: 0 0 10px rgba(255, 0, 85, 0.5);
+        }
+
+        /* --- PISTA DAS NOTAS --- */
+        .track-container {
+            flex: 1;
+            display: flex;
+            position: relative;
+            background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(255,0,85,0.02) 100%);
+        }
+
+        .track-line {
+            flex: 1;
+            border-right: 1px dashed #222;
+            position: relative;
+        }
+
+        .track-line:last-child {
+            border-right: none;
+        }
+
+        /* --- BOTÕES DE ALVO (ONDE CLICA) --- */
+        .key-targets {
+            height: 80px;
+            display: flex;
+            border-top: 2px solid #333;
+            background: #11121c;
+        }
+
+        .target {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #555;
+            border-right: 1px solid #222;
+            transition: background 0.1s, color 0.1s;
+        }
+
+        .target:last-child {
+            border-right: none;
+        }
+
+        /* Cores quando o jogador aperta a tecla */
+        .target.active-A { background: rgba(0, 255, 204, 0.2); color: #00ffcc; text-shadow: 0 0 10px #00ffcc; }
+        .target.active-S { background: rgba(255, 0, 85, 0.2); color: #ff0055; text-shadow: 0 0 10px #ff0055; }
+        .target.active-D { background: rgba(230, 255, 0, 0.2); color: #e6ff00; text-shadow: 0 0 10px #e6ff00; }
+        .target.active-F { background: rgba(0, 153, 255, 0.2); color: #0099ff; text-shadow: 0 0 10px #0099ff; }
+
+        /* --- ELEMENTO DA NOTA CAINDO --- */
+        .note {
+            width: 80%;
+            height: 20px;
+            border-radius: 10px;
+            position: absolute;
+            left: 10%;
+            top: -20px; /* Começa fora da tela */
+            box-shadow: 0 0 15px currentColor;
+        }
+
+        /* --- TELAS DE MENU / GAME OVER --- */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 18, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .screen h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #00ffcc, #ff0055);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .screen p {
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .start-btn {
+            padding: 12px 30px;
+            background: transparent;
+            border: 2px solid #ff0055;
+            color: #ff0055;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(255, 0, 85, 0.2);
+            transition: 0.2s;
+        }
+
+        .start-btn:hover {
+            background: #ff0055;
+            color: #fff;
+            box-shadow: 0 0 20px #ff0055;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="arcade-container">
+        <!-- HUD (Placar) -->
+        <div class="hud">
+            <div>SCORE: <span id="score">0000</span></div>
+            <div class="combo">X<span id="combo">0</span></div>
+        </div>
+
+        <!-- Pista de Corrida das Notas -->
+        <div class="track-container" id="trackContainer">
+            <div class="track-line" id="track-0"></div>
+            <div class="track-line" id="track-1"></div>
+            <div class="track-line" id="track-2"></div>
+            <div class="track-line" id="track-3"></div>
+        </div>
+
+        <!-- Painel de Alvos Teclado -->
+        <div class="key-targets">
+            <div class="target" id="key-A">A</div>
+            <div class="target" id="key-S">S</div>
+            <div class="target" id="key-D">D</div>
+            <div class="target" id="key-F">F</div>
+        </div>
+
+        <!-- Tela Inicial / Menu -->
+        <div class="screen" id="menuScreen">
+            <h2>CYBER BEAT</h2>
+            <p>Use as teclas do seu teclado:<br><strong>[ A ] [ S ] [ D ] [ F ]</strong><br><br>Acerte as notas coloridas quando elas chegarem exatamente em cima das letras pretas no fundo!</p>
+            <button class="start-btn" onclick="startGame()">START GAME</button>
+        </div>
+
+        <!-- Tela de Game Over -->
+        <div class="screen" id="gameOverScreen" style="display: none;">
+            <h2>GAME OVER</h2>
+            <p>Você deixou muitas notas passarem direto!<br><br>Sua Pontuação Final: <strong id="finalScore" style="color:#00ffcc;">0</strong></p>
+            <button class="start-btn" onclick="startGame()">JOGAR DE NOVO</button>
+        </div>
+    </div>
+
+    <script>
+        const trackContainer = document.getElementById('trackContainer');
+        const scoreEl = document.getElementById('score');
+        const comboEl = document.getElementById('combo');
+        const menuScreen = document.getElementById('menuScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const finalScoreEl = document.getElementById('finalScore');
+
+        let score = 0;
+        let combo = 0;
+        let lives = 10;
+        let gameActive = false;
+        let spawnInterval;
+        let gameLoopInterval;
+        let notesArray = [];
+
+        const colors = ['#00ffcc', '#ff0055', '#e6ff00', '#0099ff'];
+        const keys = ['A', 'S', 'D', 'F'];
+
+        // Captura o teclado do jogador pressionando as teclas
+        window.addEventListener('keydown', (e) => {
+            if (!gameActive) return;
+            const key = e.key.toUpperCase();
+            if (keys.includes(key)) {
+                const targetEl = document.getElementById(`key-${key}`);
+                targetEl.classList.add(`active-${key}`);
+                checkHit(key);
+            }
+        });
+
+        // Tira o efeito visual quando o jogador solta a tecla
+        window.addEventListener('keyup', (e) => {
+            const key = e.key.toUpperCase();
+            if (keys.includes(key)) {
+                const targetEl = document.getElementById(`key-${key}`);
+                targetEl.classList.remove(`active-${key}`);
+            }
+        });
+
+        function startGame() {
+            // Reset de variáveis
+            score = 0;
+            combo = 0;
+            lives = 10;
+            notesArray.forEach(note => note.element.remove());
+            notesArray = [];
+            scoreEl.innerText = score;
+            comboEl.innerText = combo;
+            
+            menuScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            gameActive = true;
+
+            // Loops do jogo
+            spawnInterval = setInterval(spawnNote, 600); // Cria notas a cada 0.6 segundos
+            gameLoopInterval = setInterval(updatePhysics, 1000 / 60); // Atualiza física a 60 FPS
+        }
+
+        function spawnNote() {
+            if (!gameActive) return;
+            const trackIndex = Math.floor(Math.random() * 4); // Escolhe pista de 0 a 3
+            const trackLine = document.getElementById(`track-${trackIndex}`);
+            
+            const noteEl = document.createElement('div');
+            noteEl.classList.add('note');
+            noteEl.style.color = colors[trackIndex];
+            noteEl.style.background = colors[trackIndex];
+            trackLine.appendChild(noteEl);
+
+            notesArray.push({
+                element: noteEl,
+                track: trackIndex,
+                top: -20
+            });
+        }
+
+        function updatePhysics() {
+            if (!gameActive) return;
+
+            for (let i = notesArray.length - 1; i >= 0; i--) {
+                let note = notesArray[i];
+                note.top += 5; // Velocidade de queda da nota
+                note.element.style.top = note.top + 'px';
+
+                // Se a nota passar direto da zona de clique (Fundo da pista de 520px)
+                if (note.top > 520) {
+                    note.element.remove();
+                    notesArray.splice(i, 1);
+                    combo = 0;
+                    comboEl.innerText = combo;
+                    lives--;
+                    
+                    if (lives <= 0) {
+                        endGame();
+                    }
+                }
+            }
+        }
+
+        function checkHit(keyStr) {
+            const trackIndex = keys.indexOf(keyStr);
+            // Procura se tem alguma nota na pista correspondente perto da área de colisão (entre 440px e 510px)
+            const targetNoteIndex = notesArray.findIndex(note => 
+                note.track === trackIndex && note.top >= 430 && note.top <= 510
+            );
+
+            if (targetNoteIndex !== -1) {
+                // ACERTOU!
+                notesArray[targetNoteIndex].element.remove();
+                notesArray.splice(targetNoteIndex, 1);
+                combo++;
+                score += 10 + (combo * 2);
+                scoreEl.innerText = score;
+                comboEl.innerText = combo;
+            } else {
+                // Errou o clique sem ter nota lá
+                combo = 0;
+                comboEl.innerText = combo;
+            }
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(spawnInterval);
+            clearInterval(gameLoopInterval);
+            finalScoreEl.innerText = score;
+            gameOverScreen.style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
